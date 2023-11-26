@@ -18,9 +18,12 @@ let scrollPosition = 0;
 let sortOrder = 'asc';
 let sortColumn = 'name';
 const loadMore = document.querySelector('.js-load-more');
+const searchButton = document.querySelector<HTMLButtonElement>('.js-search-button');
+const searchFields = document.querySelectorAll<HTMLInputElement>('.input__box');
+let searchFor = '';
 
 const drawTable = () => {
-  axios.get<Country[]>(`http://localhost:3004/countries?_limit=${limit}&_sort=${sortColumn}&_order=${sortOrder}&q=${}`).then(({ data }) => {
+  axios.get<Country[]>(`http://localhost:3004/countries?_limit=${limit}&_sort=${sortColumn}&_order=${sortOrder}&${searchFor}`).then(({ data }) => {
     scrollPosition = window.scrollY;
     countryTable.innerHTML = '';
     data.forEach((country, index) => {
@@ -39,6 +42,19 @@ const drawTable = () => {
 };
 
 drawTable();
+
+searchButton.addEventListener('click', () => {
+  const searchConditions: string[] = [];
+  searchFields.forEach((input) => {
+    const inputValue = input.value.trim();
+    const fieldName = input.getAttribute('data-column');
+    if (inputValue !== '') {
+      searchConditions.push(`${fieldName}_like=${inputValue}`);
+    }
+  });
+  searchFor = searchConditions.join('&');
+  drawTable();
+});
 
 loadMore.addEventListener('click', () => {
   limit += 20;
